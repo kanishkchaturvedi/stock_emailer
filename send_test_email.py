@@ -15,7 +15,7 @@ def send_test_email():
     """Send email with test stocks from database"""
     conn = db_client.get_connection()
     cursor = conn.cursor()
-    cursor.execute('SELECT ticker, score, reasons FROM signals ORDER BY score DESC LIMIT 10')
+    cursor.execute('SELECT ticker, score, reasons FROM signals ORDER BY score DESC')
     rows = cursor.fetchall()
     conn.close()
 

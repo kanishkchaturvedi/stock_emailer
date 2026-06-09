@@ -20,11 +20,21 @@ def add_test_signals():
         ("GOOGL", 45, "New 13F position"),
         ("AMZN", 38, "Position decreased 5.1%"),
         ("META", 25, "No recent activity"),
+        ("NVIDIA", 82, "Insider purchase|Position increased 33%"),
+        ("IBM", 60, "New 13F position|Congressional buy"),
+        ("JPM", 55, "Position increased 18%"),
+        ("V", 52, "Insider purchase"),
+        ("JNJ", 48, "Position decreased 3%"),
+        ("KO", 42, "New position"),
+        ("PG", 35, "No signals"),
     ]
+
+    # Clear old test data first
+    cursor.execute('DELETE FROM signals')
 
     for ticker, score, reasons in test_stocks:
         cursor.execute(
-            '''INSERT OR REPLACE INTO signals (ticker, score, reasons, generated_at)
+            '''INSERT INTO signals (ticker, score, reasons, generated_at)
                VALUES (?, ?, ?, ?)''',
             (ticker, score, reasons, datetime.now().isoformat())
         )
