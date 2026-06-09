@@ -32,17 +32,18 @@ jobs:
         env:
           PYTHONPATH: ${{ github.workspace }}
         run: python populate_test_data.py
-        continue-on-error: true
 
-      - name: Run daily report
+      - name: Verify test data was created
+        run: sqlite3 smart_money.db "SELECT ticker, score FROM signals ORDER BY score DESC;"
+
+      - name: Send test email
         env:
           DATABASE_PATH: smart_money.db
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          PYTHONPATH: ${{ github.workspace }}
           SMTP_EMAIL: ${{ secrets.SMTP_EMAIL }}
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
           REPORT_EMAIL: ${{ secrets.REPORT_EMAIL }}
-          PYTHONPATH: ${{ github.workspace }}
-        run: python -m smart_money_tracker.main --min-score 0
+        run: python send_test_email.py
 
       - name: Upload database artifact
         uses: actions/upload-artifact@v4
