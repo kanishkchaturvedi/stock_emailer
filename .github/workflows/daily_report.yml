@@ -1,0 +1,46 @@
+name: Daily Smart Money Report
+
+on:
+  schedule:
+    - cron: '0 9 * * *'  # 9 AM UTC daily
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  daily-report:
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Download previous database
+        uses: actions/download-artifact@v3
+        with:
+          name: smart_money_db
+          path: .
+        continue-on-error: true
+
+      - name: Run daily report
+        env:
+          DATABASE_PATH: smart_money.db
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          SMTP_EMAIL: ${{ secrets.SMTP_EMAIL }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          REPORT_EMAIL: ${{ secrets.REPORT_EMAIL }}
+        run: python smart_money_tracker/main.py
+
+      - name: Upload database artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: smart_money_db
+          path: smart_money.db
+          retention-days: 30
