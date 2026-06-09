@@ -8,6 +8,7 @@ from smart_money_tracker.config.settings import settings
 from smart_money_tracker.data_collection.congress import FetcherCongress
 from smart_money_tracker.data_collection.filings_13f import Fetcher13F
 from smart_money_tracker.data_collection.insider_form4 import FetcherForm4
+from smart_money_tracker.data_collection.finnhub import FinnhubFetcher
 from smart_money_tracker.db.client import db_client
 from smart_money_tracker.email.renderer import EmailRenderer
 from smart_money_tracker.email.sender import EmailSender
@@ -106,6 +107,33 @@ class ReportGenerator:
         except Exception as e:
             logger.warning(
                 f"Failed to collect Form 4 signals: {type(e).__name__}: {str(e)}"
+            )
+
+        # Step 2.5: Collect Finnhub insider data
+        try:
+            logger.info("Collecting Finnhub insider sentiment signals")
+            finnhub_fetcher = FinnhubFetcher()
+            insider_data = finnhub_fetcher.fetch()
+
+            for ticker, transactions in insider_data.items():
+                if ticker not in signals:
+                    signals[ticker] = {
+                        "new_13f_position": False,
+                        "position_increase_pct": 0.0,
+                        "insider_purchases": 0,
+                        "congressional_buys": 0,
+                    }
+                # Add insider purchase count from Finnhub
+                signals[ticker]["insider_purchases"] += len(transactions)
+                # Store detailed transactions for email display
+                if transactions:
+                    signals[ticker]["finnhub_insiders"] = transactions
+
+            logger.info(f"Collected Finnhub data for {len(insider_data)} tickers")
+
+        except Exception as e:
+            logger.warning(
+                f"Failed to collect Finnhub signals: {type(e).__name__}: {str(e)}"
             )
 
         # Step 3: Collect congressional signals

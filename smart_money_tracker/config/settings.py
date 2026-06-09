@@ -11,6 +11,9 @@ class Settings(BaseSettings):
     openai_api_key: str  # Required
     openai_model: str = "gpt-4o-mini"
 
+    # Finnhub API for insider data
+    finnhub_api_key: str | None = None
+
     # Email Configuration (SMTP)
     smtp_email: str | None = None
     smtp_password: str | None = None
