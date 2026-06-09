@@ -97,6 +97,48 @@
                                             </td>
                                         </tr>
 
+                                        <!-- Institutional Investors -->
+                                        {% if stock.investors %}
+                                            <tr>
+                                                <td style="padding: 15px; border-bottom: 1px solid #ddd; background-color: #f3e5f5;">
+                                                    <p style="margin: 0 0 8px 0; font-size: 12px; font-weight: bold; color: #4a148c; text-transform: uppercase;">Institutional Buyers:</p>
+                                                    <ul style="margin: 0; padding-left: 20px; font-size: 13px;">
+                                                        {% for investor in stock.investors %}
+                                                            <li style="margin: 5px 0; color: #333;">{{ investor }}</li>
+                                                        {% endfor %}
+                                                    </ul>
+                                                </td>
+                                            </tr>
+                                        {% endif %}
+
+                                        <!-- Insider Transactions -->
+                                        {% if stock.insiders %}
+                                            <tr>
+                                                <td style="padding: 15px; border-bottom: 1px solid #ddd; background-color: #e0f2f1;">
+                                                    <p style="margin: 0 0 8px 0; font-size: 12px; font-weight: bold; color: #004d40; text-transform: uppercase;">Insider Activity:</p>
+                                                    <ul style="margin: 0; padding-left: 20px; font-size: 13px;">
+                                                        {% for insider in stock.insiders %}
+                                                            <li style="margin: 5px 0; color: #333;">{{ insider }}</li>
+                                                        {% endfor %}
+                                                    </ul>
+                                                </td>
+                                            </tr>
+                                        {% endif %}
+
+                                        <!-- Congressional Trades -->
+                                        {% if stock.politicians %}
+                                            <tr>
+                                                <td style="padding: 15px; border-bottom: 1px solid #ddd; background-color: #fce4ec;">
+                                                    <p style="margin: 0 0 8px 0; font-size: 12px; font-weight: bold; color: #880e4f; text-transform: uppercase;">Congressional Activity:</p>
+                                                    <ul style="margin: 0; padding-left: 20px; font-size: 13px;">
+                                                        {% for politician in stock.politicians %}
+                                                            <li style="margin: 5px 0; color: #333;">{{ politician }}</li>
+                                                        {% endfor %}
+                                                    </ul>
+                                                </td>
+                                            </tr>
+                                        {% endif %}
+
                                         <!-- Bullish Thesis -->
                                         {% if stock.analysis and stock.analysis.bullish_thesis %}
                                             <tr>

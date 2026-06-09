@@ -21,10 +21,20 @@ def send_test_email():
 
     stocks = []
     for ticker, score, reasons in rows:
+        # Parse reasons string: reasons|investors|insiders|politicians
+        parts = reasons.split('|||') if reasons else ['', '', '', '']
+        reason_list = parts[0].split('|') if parts[0] else []
+        investors = parts[1].split('|') if len(parts) > 1 and parts[1] else []
+        insiders = parts[2].split('|') if len(parts) > 2 and parts[2] else []
+        politicians = parts[3].split('|') if len(parts) > 3 and parts[3] else []
+
         stocks.append({
             'ticker': ticker,
             'score': score,
-            'reasons': reasons.split('|') if reasons else [],
+            'reasons': [r.strip() for r in reason_list if r.strip()],
+            'investors': [inv.strip() for inv in investors if inv.strip()],
+            'insiders': [ins.strip() for ins in insiders if ins.strip()],
+            'politicians': [pol.strip() for pol in politicians if pol.strip()],
             'analysis': {
                 'bullish_thesis': 'Professional investors are accumulating this position.',
                 'bearish_thesis': 'Recent activity could reflect profit-taking or portfolio rebalancing.',
