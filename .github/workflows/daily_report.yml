@@ -21,7 +21,8 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Download previous database
+      - name: Download previous database (if exists)
+        id: download
         uses: actions/download-artifact@v4
         with:
           name: smart_money_db
