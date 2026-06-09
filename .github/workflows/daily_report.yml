@@ -28,6 +28,12 @@ jobs:
           path: .
         continue-on-error: true
 
+      - name: Populate test data (while APIs unavailable)
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: python populate_test_data.py
+        continue-on-error: true
+
       - name: Run daily report
         env:
           DATABASE_PATH: smart_money.db
