@@ -1,6 +1,7 @@
 """Configuration settings for Smart Money Tracker using Pydantic BaseSettings."""
 
 from pydantic_settings import BaseSettings
+from pydantic import ConfigDict
 
 
 class Settings(BaseSettings):
@@ -26,11 +27,11 @@ class Settings(BaseSettings):
     # Scoring Configuration
     min_score_for_email: int = 60
 
-    class Config:
-        """Pydantic config to load from .env file."""
-        env_file = ".env"
-        env_file_encoding = "utf-8"
-        case_sensitive = False
+    model_config = ConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        case_sensitive=False,
+    )
 
 
 settings = Settings()
