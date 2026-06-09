@@ -5,9 +5,6 @@ from typing import Dict, List, Optional
 
 from smart_money_tracker.ai.analyzer import AIAnalyzer
 from smart_money_tracker.config.settings import settings
-from smart_money_tracker.data_collection.congress import FetcherCongress
-from smart_money_tracker.data_collection.filings_13f import Fetcher13F
-from smart_money_tracker.data_collection.insider_form4 import FetcherForm4
 from smart_money_tracker.data_collection.finnhub import FinnhubFetcher
 from smart_money_tracker.db.client import db_client
 from smart_money_tracker.email.renderer import EmailRenderer
@@ -56,60 +53,10 @@ class ReportGenerator:
         """
         signals = {}
 
-        # Step 1: Collect 13F signals
-        try:
-            logger.info("Collecting 13F signals")
-            fetcher_13f = Fetcher13F()
-            filings = fetcher_13f.fetch()
+        # Note: SEC APIs (13F and Form 4) are currently blocked with 403 errors
+        # Using Finnhub API as primary data source for insider transactions
 
-            for filing in filings:
-                for holding in filing.holdings:
-                    ticker = holding.ticker
-                    if ticker not in signals:
-                        signals[ticker] = {
-                            "new_13f_position": False,
-                            "position_increase_pct": 0.0,
-                            "insider_purchases": 0,
-                            "congressional_buys": 0,
-                        }
-                    # Mark as new position if detected
-                    signals[ticker]["new_13f_position"] = True
-
-            logger.info(f"Collected 13F signals for {len(signals)} tickers")
-
-        except Exception as e:
-            logger.warning(
-                f"Failed to collect 13F signals: {type(e).__name__}: {str(e)}"
-            )
-
-        # Step 2: Collect Form 4 (insider) signals
-        try:
-            logger.info("Collecting insider transaction signals")
-            fetcher_form4 = FetcherForm4()
-            transactions = fetcher_form4.fetch()
-
-            for transaction in transactions:
-                ticker = transaction.ticker
-                if ticker not in signals:
-                    signals[ticker] = {
-                        "new_13f_position": False,
-                        "position_increase_pct": 0.0,
-                        "insider_purchases": 0,
-                        "congressional_buys": 0,
-                    }
-                # Count insider purchases
-                signals[ticker]["insider_purchases"] += 1
-
-            logger.info(
-                f"Collected insider signals for {len([t for t in transactions])} transactions"
-            )
-
-        except Exception as e:
-            logger.warning(
-                f"Failed to collect Form 4 signals: {type(e).__name__}: {str(e)}"
-            )
-
-        # Step 2.5: Collect Finnhub insider data
+        # Step 1: Collect Finnhub insider data
         try:
             logger.info("Collecting Finnhub insider sentiment signals")
             finnhub_fetcher = FinnhubFetcher()
@@ -134,37 +81,6 @@ class ReportGenerator:
         except Exception as e:
             logger.warning(
                 f"Failed to collect Finnhub signals: {type(e).__name__}: {str(e)}"
-            )
-
-        # Step 3: Collect congressional signals
-        try:
-            logger.info("Collecting congressional trade signals")
-            fetcher_congress = FetcherCongress()
-            trades = fetcher_congress.fetch()
-
-            for trade in trades:
-                # Only count buy transactions
-                if trade.buy_or_sell.lower() != "buy":
-                    continue
-
-                ticker = trade.ticker
-                if ticker not in signals:
-                    signals[ticker] = {
-                        "new_13f_position": False,
-                        "position_increase_pct": 0.0,
-                        "insider_purchases": 0,
-                        "congressional_buys": 0,
-                    }
-                # Count congressional buys
-                signals[ticker]["congressional_buys"] += 1
-
-            logger.info(
-                f"Collected congressional signals for {len([t for t in trades if t.buy_or_sell.lower() == 'buy'])} trades"
-            )
-
-        except Exception as e:
-            logger.warning(
-                f"Failed to collect congressional signals: {type(e).__name__}: {str(e)}"
             )
 
         logger.info(f"Signal collection complete. Total tickers: {len(signals)}")
