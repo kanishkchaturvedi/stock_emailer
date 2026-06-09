@@ -31,7 +31,11 @@ class EmailSender:
         """
         if provider == "auto":
             # Auto-detect provider from settings
-            if settings.resend_api_key:
+            # Prefer SMTP if both are configured, as it's more reliable
+            if settings.smtp_email and settings.smtp_password and "@" in settings.smtp_email:
+                self.provider = "smtp"
+                logger.info("Auto-detected SMTP provider")
+            elif settings.resend_api_key and not settings.resend_api_key.startswith("re_your"):
                 self.provider = "resend"
                 logger.info("Auto-detected Resend API provider")
             elif settings.smtp_email:
