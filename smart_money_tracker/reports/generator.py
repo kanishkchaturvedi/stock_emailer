@@ -29,7 +29,7 @@ class ReportGenerator:
             min_score: Minimum score threshold for stocks to include in report.
                       Defaults to settings.min_score_for_email if not provided.
         """
-        self.min_score = min_score or settings.min_score_for_email
+        self.min_score = min_score if min_score is not None else settings.min_score_for_email
         self.scorer = ScoringEngine()
         self.analyzer = AIAnalyzer()
         self.renderer = EmailRenderer()

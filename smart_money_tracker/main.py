@@ -69,7 +69,7 @@ def main() -> int:
 
         # Check if any stocks found
         if not stocks:
-            logger.warning("No high-conviction stocks found above threshold")
+            logger.warning("No stocks found (no signals detected)")
             logger.info(f"Completed at {datetime.now().isoformat()}")
             return 0
 

@@ -75,12 +75,21 @@
                                                             <h3 style="margin: 0; font-size: 22px; font-weight: bold; color: #0066cc;">{{ stock.ticker }}</h3>
                                                         </td>
                                                         <td align="right">
-                                                            <div style="background-color: #0066cc; color: white; padding: 8px 15px; border-radius: 4px; text-align: center; display: inline-block;">
+                                                            <div style="background-color: {% if stock.score < 60 %}#ff9800{% else %}#0066cc{% endif %}; color: white; padding: 8px 15px; border-radius: 4px; text-align: center; display: inline-block;">
                                                                 <span style="font-size: 18px; font-weight: bold;">{{ stock.score }}</span>
                                                                 <span style="font-size: 12px; display: block;">/ 100</span>
                                                             </div>
                                                         </td>
                                                     </tr>
+                                                    {% if stock.score < 60 %}
+                                                    <tr>
+                                                        <td colspan="2" style="padding-top: 10px;">
+                                                            <div style="background-color: #fff3cd; border-left: 3px solid #ff9800; padding: 8px 10px; font-size: 12px; color: #856404;">
+                                                                <strong>⚠️ Low Confidence:</strong> Score below recommended threshold (60). Limited signal strength - proceed with caution.
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                    {% endif %}
                                                 </table>
                                             </td>
                                         </tr>
