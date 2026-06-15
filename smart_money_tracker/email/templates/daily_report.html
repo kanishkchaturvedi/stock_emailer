@@ -6,12 +6,11 @@
     <title>Smart Money Tracker - Daily Report</title>
 </head>
 <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; background-color: #f5f5f5; margin: 0; padding: 0;">
-    <!-- Outer wrapper for email client compatibility -->
     <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5;">
         <tr>
             <td align="center" style="padding: 20px 0;">
-                <!-- Main container -->
                 <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-collapse: collapse; max-width: 100%;">
+
                     <!-- Header -->
                     <tr>
                         <td style="background-color: #0066cc; color: white; padding: 30px 20px; text-align: center; border-bottom: 4px solid #004a99;">
@@ -32,20 +31,20 @@
                         <td style="padding: 25px 20px;">
                             <h2 style="margin: 0 0 15px 0; font-size: 18px; color: #0066cc; border-bottom: 2px solid #0066cc; padding-bottom: 10px;">Executive Summary</h2>
                             <p style="margin: 0; font-size: 15px; color: #333;">
-                                Found <strong style="color: #0066cc; font-size: 18px;">{{ stocks|length }}</strong> high-conviction stock{% if stocks|length != 1 %}s{% endif %} with compelling institutional and insider activity signals.
+                                Found <strong style="color: #0066cc; font-size: 18px;">{{ stocks|length }}</strong> stock{% if stocks|length != 1 %}s{% endif %} with notable institutional and insider buying activity.
                             </p>
                         </td>
                     </tr>
 
-                    <!-- Disclaimer Box -->
+                    <!-- Disclaimer -->
                     <tr>
-                        <td style="padding: 0 20px; margin: 20px 0;">
+                        <td style="padding: 0 20px;">
                             <table width="100%" cellpadding="15" cellspacing="0" style="background-color: #fff3cd; border-left: 4px solid #ff9800; border: 1px solid #ffc107; border-collapse: collapse;">
                                 <tr>
                                     <td style="font-size: 13px; color: #333;">
-                                        <strong style="font-size: 14px; color: #d84315;">DISCLAIMER & RISK WARNING</strong>
+                                        <strong style="font-size: 14px; color: #d84315;">DISCLAIMER &amp; RISK WARNING</strong>
                                         <p style="margin: 10px 0 0 0;">
-                                            This report is for informational purposes only and does not constitute financial advice, investment recommendations, or an offer to buy or sell securities. The analysis is based on publicly available data and signals without regard to your individual circumstances, risk tolerance, or investment objectives. Past performance does not guarantee future results. All investments carry risk, including potential loss of principal. Please consult with a qualified financial advisor before making any investment decisions.
+                                            This report is for informational purposes only and does not constitute financial advice. All investments carry risk including potential loss of principal. Please consult a qualified financial advisor before making investment decisions.
                                         </p>
                                     </td>
                                 </tr>
@@ -56,23 +55,28 @@
                     <!-- Stock Cards -->
                     {% if stocks %}
                         <tr>
-                            <td style="padding: 20px;">
-                                <h2 style="margin: 0 0 20px 0; font-size: 18px; color: #0066cc; border-bottom: 2px solid #0066cc; padding-bottom: 10px;">Top Opportunities</h2>
+                            <td style="padding: 20px 20px 10px 20px;">
+                                <h2 style="margin: 0; font-size: 18px; color: #0066cc; border-bottom: 2px solid #0066cc; padding-bottom: 10px;">Top Stocks by Activity</h2>
                             </td>
                         </tr>
 
                         {% for stock in stocks %}
                             <tr>
                                 <td style="padding: 0 20px 20px 20px;">
-                                    <!-- Stock Card -->
                                     <table width="100%" cellpadding="0" cellspacing="0" style="border: 1px solid #ddd; border-radius: 4px; background-color: #fafafa; border-collapse: collapse;">
-                                        <!-- Ticker and Score Header -->
+
+                                        <!-- Ticker + Score -->
                                         <tr>
                                             <td style="background-color: #f0f0f0; padding: 15px; border-bottom: 1px solid #ddd;">
                                                 <table width="100%" cellpadding="0" cellspacing="0">
                                                     <tr>
                                                         <td>
                                                             <h3 style="margin: 0; font-size: 22px; font-weight: bold; color: #0066cc;">{{ stock.ticker }}</h3>
+                                                            {% if stock.price %}
+                                                            <p style="margin: 3px 0 0 0; font-size: 13px; color: #555;">
+                                                                ${{ "%.2f"|format(stock.price) }}{% if stock.market_cap %} &nbsp;·&nbsp; Mkt Cap: ${{ "%.1f"|format(stock.market_cap / 1e9) }}B{% endif %}
+                                                            </p>
+                                                            {% endif %}
                                                         </td>
                                                         <td align="right">
                                                             <div style="background-color: {% if stock.score < 60 %}#ff9800{% else %}#0066cc{% endif %}; color: white; padding: 8px 15px; border-radius: 4px; text-align: center; display: inline-block;">
@@ -85,7 +89,7 @@
                                                     <tr>
                                                         <td colspan="2" style="padding-top: 10px;">
                                                             <div style="background-color: #fff3cd; border-left: 3px solid #ff9800; padding: 8px 10px; font-size: 12px; color: #856404;">
-                                                                <strong>⚠️ Low Confidence:</strong> Score below recommended threshold (60). Limited signal strength - proceed with caution.
+                                                                <strong>Low Confidence:</strong> Limited signal strength — shown for visibility.
                                                             </div>
                                                         </td>
                                                     </tr>
@@ -94,113 +98,87 @@
                                             </td>
                                         </tr>
 
-                                        <!-- Signals/Reasons -->
+                                        <!-- Signals -->
+                                        {% if stock.reasons %}
                                         <tr>
                                             <td style="padding: 15px; border-bottom: 1px solid #ddd;">
-                                                <p style="margin: 0 0 8px 0; font-size: 13px; font-weight: bold; color: #666; text-transform: uppercase;">Signals:</p>
+                                                <p style="margin: 0 0 8px 0; font-size: 12px; font-weight: bold; color: #555; text-transform: uppercase; letter-spacing: 0.5px;">Why It's Here</p>
                                                 <ul style="margin: 0; padding-left: 20px; font-size: 13px;">
                                                     {% for reason in stock.reasons %}
-                                                        <li style="margin: 5px 0; color: #333;">{{ reason }}</li>
+                                                        <li style="margin: 4px 0; color: #333;">{{ reason }}</li>
                                                     {% endfor %}
                                                 </ul>
                                             </td>
                                         </tr>
-
-                                        <!-- Institutional Investors -->
-                                        {% if stock.investors %}
-                                            <tr>
-                                                <td style="padding: 15px; border-bottom: 1px solid #ddd; background-color: #f3e5f5;">
-                                                    <p style="margin: 0 0 8px 0; font-size: 12px; font-weight: bold; color: #4a148c; text-transform: uppercase;">Institutional Buyers:</p>
-                                                    <ul style="margin: 0; padding-left: 20px; font-size: 13px;">
-                                                        {% for investor in stock.investors %}
-                                                            <li style="margin: 5px 0; color: #333;">{{ investor }}</li>
-                                                        {% endfor %}
-                                                    </ul>
-                                                </td>
-                                            </tr>
                                         {% endif %}
 
-                                        <!-- Insider Transactions -->
+                                        <!-- Who Bought — Form 4 open-market purchases -->
                                         {% if stock.insiders %}
-                                            <tr>
-                                                <td style="padding: 15px; border-bottom: 1px solid #ddd; background-color: #e0f2f1;">
-                                                    <p style="margin: 0 0 8px 0; font-size: 12px; font-weight: bold; color: #004d40; text-transform: uppercase;">Insider Activity:</p>
-                                                    <ul style="margin: 0; padding-left: 20px; font-size: 13px;">
-                                                        {% for insider in stock.insiders %}
-                                                            <li style="margin: 5px 0; color: #333;">{{ insider }}</li>
-                                                        {% endfor %}
-                                                    </ul>
-                                                </td>
-                                            </tr>
+                                        <tr>
+                                            <td style="padding: 15px; border-bottom: 1px solid #ddd; background-color: #e8f5e9;">
+                                                <p style="margin: 0 0 8px 0; font-size: 12px; font-weight: bold; color: #1b5e20; text-transform: uppercase; letter-spacing: 0.5px;">Who Bought (Insiders)</p>
+                                                <p style="margin: 0 0 8px 0; font-size: 11px; color: #555; font-style: italic;">Open-market purchases filed with SEC (Form 4) — executives spending their own cash.</p>
+                                                <ul style="margin: 0; padding-left: 20px; font-size: 13px;">
+                                                    {% for insider in stock.insiders %}
+                                                        <li style="margin: 5px 0; color: #1b5e20; font-weight: 500;">{{ insider }}</li>
+                                                    {% endfor %}
+                                                </ul>
+                                            </td>
+                                        </tr>
+                                        {% endif %}
+
+                                        <!-- Major Institutional Holders — 13F -->
+                                        {% if stock.institutional_holders %}
+                                        <tr>
+                                            <td style="padding: 15px; border-bottom: 1px solid #ddd; background-color: #e8eaf6;">
+                                                <p style="margin: 0 0 8px 0; font-size: 12px; font-weight: bold; color: #1a237e; text-transform: uppercase; letter-spacing: 0.5px;">Major Funds Holding This Stock</p>
+                                                <p style="margin: 0 0 8px 0; font-size: 11px; color: #555; font-style: italic;">Top institutional holders from Yahoo Finance (aggregated from 13F filings).</p>
+                                                <ul style="margin: 0; padding-left: 20px; font-size: 13px;">
+                                                    {% for holder in stock.institutional_holders %}
+                                                        <li style="margin: 5px 0; color: #1a237e;">{{ holder }}</li>
+                                                    {% endfor %}
+                                                </ul>
+                                            </td>
+                                        </tr>
                                         {% endif %}
 
                                         <!-- Congressional Trades -->
                                         {% if stock.politicians %}
-                                            <tr>
-                                                <td style="padding: 15px; border-bottom: 1px solid #ddd; background-color: #fce4ec;">
-                                                    <p style="margin: 0 0 8px 0; font-size: 12px; font-weight: bold; color: #880e4f; text-transform: uppercase;">Congressional Activity:</p>
-                                                    <ul style="margin: 0; padding-left: 20px; font-size: 13px;">
-                                                        {% for politician in stock.politicians %}
-                                                            <li style="margin: 5px 0; color: #333;">{{ politician }}</li>
-                                                        {% endfor %}
-                                                    </ul>
-                                                </td>
-                                            </tr>
-                                        {% endif %}
-
-                                        <!-- Bullish Thesis -->
-                                        {% if stock.analysis and stock.analysis.bullish_thesis %}
-                                            <tr>
-                                                <td style="padding: 15px; border-bottom: 1px solid #ddd; background-color: #e8f5e9;">
-                                                    <p style="margin: 0 0 8px 0; font-size: 12px; font-weight: bold; color: #1b5e20; text-transform: uppercase;">Bullish Thesis</p>
-                                                    <p style="margin: 0; font-size: 13px; color: #333; line-height: 1.5;">{{ stock.analysis.bullish_thesis }}</p>
-                                                </td>
-                                            </tr>
-                                        {% endif %}
-
-                                        <!-- Bearish Thesis -->
-                                        {% if stock.analysis and stock.analysis.bearish_thesis %}
-                                            <tr>
-                                                <td style="padding: 15px; border-bottom: 1px solid #ddd; background-color: #ffe0b2;">
-                                                    <p style="margin: 0 0 8px 0; font-size: 12px; font-weight: bold; color: #e65100; text-transform: uppercase;">Bearish Thesis</p>
-                                                    <p style="margin: 0; font-size: 13px; color: #333; line-height: 1.5;">{{ stock.analysis.bearish_thesis }}</p>
-                                                </td>
-                                            </tr>
-                                        {% endif %}
-
-                                        <!-- Key Risks -->
-                                        {% if stock.analysis and stock.analysis.key_risks %}
-                                            <tr>
-                                                <td style="padding: 15px; border-bottom: 1px solid #ddd; background-color: #ffebee;">
-                                                    <p style="margin: 0 0 8px 0; font-size: 12px; font-weight: bold; color: #b71c1c; text-transform: uppercase;">Key Risks</p>
-                                                    <p style="margin: 0; font-size: 13px; color: #333; line-height: 1.5;">{{ stock.analysis.key_risks }}</p>
-                                                </td>
-                                            </tr>
+                                        <tr>
+                                            <td style="padding: 15px; border-bottom: 1px solid #ddd; background-color: #fce4ec;">
+                                                <p style="margin: 0 0 8px 0; font-size: 12px; font-weight: bold; color: #880e4f; text-transform: uppercase; letter-spacing: 0.5px;">Congressional Activity</p>
+                                                <ul style="margin: 0; padding-left: 20px; font-size: 13px;">
+                                                    {% for politician in stock.politicians %}
+                                                        <li style="margin: 5px 0; color: #333;">{{ politician }}</li>
+                                                    {% endfor %}
+                                                </ul>
+                                            </td>
+                                        </tr>
                                         {% endif %}
 
                                         <!-- Notable Activity -->
                                         {% if stock.notable_activity %}
-                                            <tr>
-                                                <td style="padding: 15px; background-color: #f0f4ff;">
-                                                    <p style="margin: 0 0 8px 0; font-size: 12px; font-weight: bold; color: #1a237e; text-transform: uppercase;">Notable Activity</p>
-                                                    <p style="margin: 0; font-size: 13px; color: #333; line-height: 1.5;">{{ stock.notable_activity }}</p>
-                                                </td>
-                                            </tr>
+                                        <tr>
+                                            <td style="padding: 15px; background-color: #f0f4ff;">
+                                                <p style="margin: 0 0 8px 0; font-size: 12px; font-weight: bold; color: #1a237e; text-transform: uppercase;">Notable Activity</p>
+                                                <p style="margin: 0; font-size: 13px; color: #333; line-height: 1.5;">{{ stock.notable_activity }}</p>
+                                            </td>
+                                        </tr>
                                         {% endif %}
+
                                     </table>
                                 </td>
                             </tr>
 
                             {% if not loop.last %}
-                                <tr>
-                                    <td style="padding: 0; height: 10px;"></td>
-                                </tr>
+                            <tr><td style="height: 10px;"></td></tr>
                             {% endif %}
                         {% endfor %}
+
                     {% else %}
                         <tr>
-                            <td style="padding: 20px; text-align: center; color: #999;">
-                                <p>No high-conviction stocks identified in today's analysis.</p>
+                            <td style="padding: 40px 20px; text-align: center; color: #999;">
+                                <p>No significant buying activity detected in the tracked tickers this period.</p>
                             </td>
                         </tr>
                     {% endif %}
@@ -208,17 +186,15 @@
                     <!-- Footer -->
                     <tr>
                         <td style="background-color: #f5f5f5; border-top: 1px solid #ddd; padding: 20px;">
-                            <p style="margin: 0 0 10px 0; font-size: 11px; color: #999; text-align: center;">
-                                <strong>Disclaimer:</strong> This report is provided for educational and informational purposes only. It is not a recommendation to buy or sell any security. Past performance does not guarantee future results.
+                            <p style="margin: 0 0 6px 0; font-size: 11px; color: #999; text-align: center;">
+                                <strong>Data sources:</strong> SEC EDGAR Form 4 (insider open-market purchases) &amp; Yahoo Finance (institutional holders)
                             </p>
                             <p style="margin: 0; font-size: 11px; color: #999; text-align: center;">
-                                Smart Money Tracker - Powered by institutional and insider activity analysis
-                            </p>
-                            <p style="margin: 8px 0 0 0; font-size: 10px; color: #bbb; text-align: center;">
-                                <a href="#" style="color: #0066cc; text-decoration: none;">Unsubscribe</a>
+                                Smart Money Tracker — not financial advice. Always do your own research.
                             </p>
                         </td>
                     </tr>
+
                 </table>
             </td>
         </tr>

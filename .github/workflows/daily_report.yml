@@ -2,7 +2,8 @@ name: Daily Smart Money Report
 
 on:
   schedule:
-    - cron: '0 9 * * *'  # 9 AM UTC daily
+    - cron: '0 9 * * 1'  # 9 AM UTC Monday
+    - cron: '0 9 * * 4'  # 9 AM UTC Thursday
   workflow_dispatch:  # Allow manual trigger
 
 jobs:
@@ -27,8 +28,6 @@ jobs:
         env:
           DATABASE_PATH: smart_money.db
           PYTHONPATH: ${{ github.workspace }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          FINNHUB_API_KEY: ${{ secrets.FINNHUB_API_KEY }}
           SMTP_EMAIL: ${{ secrets.SMTP_EMAIL }}
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
           REPORT_EMAIL: ${{ secrets.REPORT_EMAIL }}

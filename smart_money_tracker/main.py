@@ -45,12 +45,6 @@ def main() -> int:
         default=60,
         help="Minimum score threshold for stocks to include (default: 60)",
     )
-    parser.add_argument(
-        "--skip-fetch",
-        action="store_true",
-        help="Skip data collection, use database only",
-    )
-
     args = parser.parse_args()
 
     try:

@@ -8,11 +8,8 @@ class Settings(BaseSettings):
     """Application settings loaded from environment variables and .env file."""
 
     # OpenAI Configuration
-    openai_api_key: str  # Required
+    openai_api_key: str | None = None
     openai_model: str = "gpt-4o-mini"
-
-    # Finnhub API for insider data
-    finnhub_api_key: str | None = None
 
     # Email Configuration (SMTP)
     smtp_email: str | None = None
@@ -34,6 +31,7 @@ class Settings(BaseSettings):
         env_file=".env",
         env_file_encoding="utf-8",
         case_sensitive=False,
+        extra="ignore",
     )
 
 

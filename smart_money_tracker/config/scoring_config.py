@@ -2,11 +2,10 @@
 
 # Scoring rules with point values for different signal types
 SCORING_RULES = {
-    "new_position": 40,
-    "position_increase_gt_25pct": 20,
-    "position_increase_gt_50pct": 35,
-    "insider_purchase": 30,
-    "multiple_insider_purchases": 40,
-    "congressional_buy": 10,
-    "congressional_multiple_buys": 15,
+    "insider_purchase": 20,           # 1 purchase
+    "multiple_insider_purchases": 35,  # 2-3 purchases
+    "high_insider_purchases": 55,      # 4-5 purchases
+    "very_high_insider_purchases": 70, # 6+ purchases
+    "tracked_fund_holder": 10,        # held by 1 tracked institution
+    "multiple_tracked_funds": 20,     # held by 2+ tracked institutions
 }

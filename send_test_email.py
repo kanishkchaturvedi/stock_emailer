@@ -1,68 +1,50 @@
 #!/usr/bin/env python3
-"""
-Send test email with stocks from database.
-"""
-import os
+"""Send a test email using a minimal stock payload to verify SMTP delivery."""
+
 from datetime import datetime
+
+from smart_money_tracker.config.settings import settings
 from smart_money_tracker.email.renderer import EmailRenderer
 from smart_money_tracker.email.sender import EmailSender
-from smart_money_tracker.db.client import db_client
 from smart_money_tracker.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
-def send_test_email():
-    """Send email with test stocks from database"""
-    conn = db_client.get_connection()
-    cursor = conn.cursor()
-    cursor.execute('SELECT ticker, score, reasons FROM signals ORDER BY score DESC')
-    rows = cursor.fetchall()
-    conn.close()
 
-    stocks = []
-    for ticker, score, reasons in rows:
-        # Parse reasons string: reasons|investors|insiders|politicians
-        parts = reasons.split('|||') if reasons else ['', '', '', '']
-        reason_list = parts[0].split('|') if parts[0] else []
-        investors = parts[1].split('|') if len(parts) > 1 and parts[1] else []
-        insiders = parts[2].split('|') if len(parts) > 2 and parts[2] else []
-        politicians = parts[3].split('|') if len(parts) > 3 and parts[3] else []
+def send_test_email() -> int:
+    stocks = [
+        {
+            "ticker": "TEST",
+            "score": 75,
+            "reasons": ["Test email — SMTP delivery check"],
+            "insiders": ["John Doe (CEO) — 10,000 shares @ $100.00 = $1,000,000 on 2026-06-15"],
+            "institutional_holders": ["Vanguard Group — 5,000,000 shares — ~$500.0M position"],
+            "price": 100.00,
+            "market_cap": 10_000_000_000,
+            "politicians": [],
+            "notable_activity": None,
+            "analysis": None,
+        }
+    ]
 
-        stocks.append({
-            'ticker': ticker,
-            'score': score,
-            'reasons': [r.strip() for r in reason_list if r.strip()],
-            'investors': [inv.strip() for inv in investors if inv.strip()],
-            'insiders': [ins.strip() for ins in insiders if ins.strip()],
-            'politicians': [pol.strip() for pol in politicians if pol.strip()],
-            'analysis': {
-                'bullish_thesis': 'Professional investors are accumulating this position.',
-                'bearish_thesis': 'Recent activity could reflect profit-taking or portfolio rebalancing.',
-                'key_risks': 'Market conditions and broader economic factors.'
-            }
-        })
+    renderer = EmailRenderer()
+    html = renderer.render(stocks, datetime.now())
 
-    if stocks:
-        logger.info(f"Sending report with {len(stocks)} stocks...")
-        renderer = EmailRenderer()
-        html = renderer.render(stocks, datetime.now())
+    sender = EmailSender()
+    success = sender.send(
+        to_email=settings.report_email,
+        subject=f"Smart Money Tracker — Test Email {datetime.now().strftime('%Y-%m-%d %H:%M')}",
+        html=html,
+    )
 
-        sender = EmailSender()
-        success = sender.send(
-            to_email=os.environ['REPORT_EMAIL'],
-            subject=f"Smart Money Tracker Report - {datetime.now().strftime('%Y-%m-%d')}",
-            html=html
-        )
-
-        if success:
-            logger.info("Email sent successfully!")
-            return 0
-        else:
-            logger.error("Email failed!")
-            return 1
+    if success:
+        logger.info(f"Test email sent successfully to {settings.report_email}")
+        return 0
     else:
-        logger.warning("No stocks found in database")
+        logger.error("Test email failed")
         return 1
 
+
 if __name__ == "__main__":
-    exit(send_test_email())
+    import sys
+    sys.exit(send_test_email())
