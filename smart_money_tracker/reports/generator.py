@@ -3,8 +3,14 @@
 from datetime import datetime
 from typing import Dict, List, Optional
 
+from smart_money_tracker.ai.tips_generator import generate_tips
 from smart_money_tracker.config.settings import settings
 from smart_money_tracker.data_collection.sec_edgar import SECEdgarFetcher, TRACKED_TICKERS
+from smart_money_tracker.data_collection.stock_screener import (
+    INDIA_WATCHLIST,
+    US_WATCHLIST,
+    screen_stocks,
+)
 from smart_money_tracker.data_collection.yfinance_fetcher import (
     fetch_institutional_holders,
     fetch_stock_info,
@@ -135,7 +141,37 @@ class ReportGenerator:
             report_stocks.append(stock)
 
         logger.info(f"Report generation complete. {len(report_stocks)} stocks")
-        return report_stocks
+
+        # Step 5: AI stock tips — independent of signal pipeline
+        tips_india, tips_us = self._collect_tips()
+        return {"stocks": report_stocks, "tips_india": tips_india, "tips_us": tips_us}
+
+    def _collect_tips(self):
+        """Screen India + US watchlists and generate AI tips for top candidates."""
+        try:
+            logger.info("Screening India watchlist for AI tips")
+            india_candidates = screen_stocks(INDIA_WATCHLIST, n=5, market="India")
+        except Exception as e:
+            logger.warning(f"India screener failed: {e}")
+            india_candidates = []
+
+        try:
+            logger.info("Screening US watchlist for AI tips")
+            us_candidates = screen_stocks(US_WATCHLIST, n=5, market="US")
+        except Exception as e:
+            logger.warning(f"US screener failed: {e}")
+            us_candidates = []
+
+        if not india_candidates and not us_candidates:
+            return [], []
+
+        logger.info(f"Generating AI tips for {len(india_candidates)} India + {len(us_candidates)} US stocks")
+        all_tips = generate_tips(india_candidates, us_candidates)
+
+        tips_india = [t for t in all_tips if t["market"] == "India"]
+        tips_us = [t for t in all_tips if t["market"] == "US"]
+        logger.info(f"AI tips generated: {len(tips_india)} India, {len(tips_us)} US")
+        return tips_india, tips_us
 
     @staticmethod
     def _format_insider(p: dict) -> str:
@@ -172,14 +208,30 @@ class ReportGenerator:
             parts.append(f"{pct_out:.2f}% of float")
         return " — ".join(parts)
 
-    def send_report(self, stocks: List[Dict], recipient: str | None = None) -> bool:
-        """Send the generated report via email."""
+    def send_report(self, report: Dict | List[Dict], recipient: str | None = None) -> bool:
+        """
+        Send the generated report via email.
+
+        Args:
+            report: Either the full report dict from generate_report()
+                    {"stocks": [...], "tips_india": [...], "tips_us": [...]}
+                    or a plain list of stocks (backwards-compatible).
+        """
         recipient = recipient or settings.report_email
+
+        if isinstance(report, list):
+            stocks = report
+            tips_india: List[Dict] = []
+            tips_us: List[Dict] = []
+        else:
+            stocks = report.get("stocks", [])
+            tips_india = report.get("tips_india", [])
+            tips_us = report.get("tips_us", [])
 
         try:
             logger.info(f"Sending report to {recipient}")
             generated_at = datetime.now()
-            html = self.renderer.render(stocks, generated_at)
+            html = self.renderer.render(stocks, generated_at, tips_india, tips_us)
             logger.info(f"Rendered email HTML ({len(html)} bytes)")
 
             subject = f"Smart Money Tracker Report - {generated_at.strftime('%Y-%m-%d')}"

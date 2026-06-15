@@ -13,84 +13,49 @@ logger = get_logger(__name__)
 
 
 def main() -> int:
-    """
-    Main entry point for the Smart Money Tracker application.
-
-    Orchestrates:
-    1. CLI argument parsing
-    2. Report generation with configurable scoring threshold
-    3. Optional report sending via email
-    4. Proper exit codes and error handling
-
-    Returns:
-        0 on success, 1 on error
-    """
     parser = ArgumentParser(
         description="Smart Money Tracker - Track insider and smart money trading signals"
     )
-    parser.add_argument(
-        "--dry-run",
-        action="store_true",
-        help="Render report only, do not send email",
-    )
-    parser.add_argument(
-        "--recipient",
-        type=str,
-        default=None,
-        help="Override recipient email address",
-    )
-    parser.add_argument(
-        "--min-score",
-        type=int,
-        default=60,
-        help="Minimum score threshold for stocks to include (default: 60)",
-    )
+    parser.add_argument("--dry-run", action="store_true", help="Render report only, do not send email")
+    parser.add_argument("--recipient", type=str, default=None, help="Override recipient email address")
+    parser.add_argument("--min-score", type=int, default=60, help="Minimum score threshold (default: 60)")
     args = parser.parse_args()
 
     try:
-        # Log start
         logger.info("=" * 50)
         logger.info("Smart Money Tracker - Daily Report")
         logger.info(f"Started at {datetime.now().isoformat()}")
         logger.info("=" * 50)
 
-        # Create report generator with min_score
-        logger.info(f"Generating report with min_score={args.min_score}")
         generator = ReportGenerator(min_score=args.min_score)
+        report = generator.generate_report()
 
-        # Generate report
-        stocks = generator.generate_report()
+        stocks = report.get("stocks", [])
+        tips_india = report.get("tips_india", [])
+        tips_us = report.get("tips_us", [])
 
-        # Check if any stocks found
-        if not stocks:
-            logger.warning("No stocks found (no signals detected)")
+        if not stocks and not tips_india and not tips_us:
+            logger.warning("No signals or tips generated")
             logger.info(f"Completed at {datetime.now().isoformat()}")
             return 0
 
-        # Log summary
         logger.info(f"Found {len(stocks)} high-conviction stocks:")
         for stock in stocks:
             reasons_str = ", ".join(stock["reasons"][:2])
-            logger.info(
-                f"  {stock['ticker']}: {stock['score']}/100 - {reasons_str}"
-            )
+            logger.info(f"  {stock['ticker']}: {stock['score']}/100 - {reasons_str}")
 
-        # Handle dry-run vs send
+        logger.info(f"AI tips: {len(tips_india)} India, {len(tips_us)} US")
+
+        recipient = args.recipient or settings.report_email
+
         if args.dry_run:
-            recipient = args.recipient or settings.report_email
-            logger.info(
-                f"[DRY RUN] Would send report to {recipient} (not sending)"
-            )
+            logger.info(f"[DRY RUN] Would send report to {recipient} (not sending)")
         else:
-            recipient = args.recipient or settings.report_email
-            logger.info(f"Sending report to {recipient}")
-            success = generator.send_report(stocks, recipient)
-
+            success = generator.send_report(report, recipient)
             if not success:
                 logger.error("Failed to send report")
                 logger.info(f"Completed at {datetime.now().isoformat()}")
                 return 1
-
             logger.info(f"Report sent successfully to {recipient}")
 
         logger.info(f"Completed at {datetime.now().isoformat()}")

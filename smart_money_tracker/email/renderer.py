@@ -26,7 +26,13 @@ class EmailRenderer:
         )
         logger.info("EmailRenderer initialized with Jinja2 environment")
 
-    def render(self, stocks: List[dict], generated_at: datetime) -> str:
+    def render(
+        self,
+        stocks: List[dict],
+        generated_at: datetime,
+        tips_india: List[dict] | None = None,
+        tips_us: List[dict] | None = None,
+    ) -> str:
         """
         Render the daily report HTML template.
 
@@ -61,10 +67,13 @@ class EmailRenderer:
             html_output = template.render(
                 stocks=stocks,
                 generated_at=timestamp_str,
+                tips_india=tips_india or [],
+                tips_us=tips_us or [],
             )
 
             logger.info(
-                f"Successfully rendered email template for {len(stocks)} stock(s)"
+                f"Successfully rendered email template for {len(stocks)} stock(s), "
+                f"{len(tips_india or [])} India tips, {len(tips_us or [])} US tips"
             )
             return html_output
 
